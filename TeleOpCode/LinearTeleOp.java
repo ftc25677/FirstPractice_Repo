@@ -21,7 +21,7 @@ public class LinearTeleOp extends OpMode {
         leftRear = hardwareMap.get(DcMotor.class, "motor0");
         rightRear = hardwareMap.get(DcMotor.class, "motor3");
         pivotMotor = hardwareMap.get(DcMotor.class, "Pivot1");
-// These codes properly add hardware blah blah please be specific no blah
+// These codes properly add hardware blah blah please be specific no blah yes sir!
     }
 
     @Override
