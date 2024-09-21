@@ -13,20 +13,29 @@ public class LinearTeleOp extends OpMode {
     private ElapsedTime runtime = new ElapsedTime();
     DcMotor leftFront, rightFront;
     DcMotor leftRear, rightRear;
+    DcMotor Pivot;
     @Override
     public void init() {
         leftFront = hardwareMap.get(DcMotor.class,"motor1");
         rightFront = hardwareMap.get(DcMotor.class, "motor2");
         leftRear = hardwareMap.get(DcMotor.class, "motor0");
         rightRear = hardwareMap.get(DcMotor.class, "motor3");
+        pivotMotor = hardwareMap.get(DcMotor.class, "Pivot1");
+
     }
 
     @Override
     public void loop() {
         double leftPower;
         double rightPower;
+        double pivotPower;
         double drive = -gamepad1.left_stick_y;
         double turn  =  gamepad1.right_stick_x;
+
+        //Setting the Pivot motor to gamepad 2's left stick y
+        double pivotTurn = gamepad2.left_stick_y;
+        pivotPower = Range.clip(pivotTurn, -1.0. 1.0);
+
         // This sets the joysticks to their corresponding values
         leftPower = Range.clip(drive + turn, -1.0, 1.0) ;
         rightPower = Range.clip(drive - turn, -1.0, 1.0) ;
