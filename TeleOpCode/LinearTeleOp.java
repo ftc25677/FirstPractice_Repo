@@ -14,7 +14,8 @@ public class LinearTeleOp extends OpMode {
     DcMotor leftFront, rightFront;
     DcMotor leftRear, rightRear;
     DcMotor Pivot;
-    @Override
+    //Hello!
+    @Overide
     public void init() {
         leftFront = hardwareMap.get(DcMotor.class,"motor1");
         rightFront = hardwareMap.get(DcMotor.class, "motor2");
