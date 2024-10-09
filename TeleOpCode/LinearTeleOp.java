@@ -66,9 +66,9 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear OpMode")
+@TeleOp
 
-public class LinearTeleOp extends LinearOpMode {
+public class SampleTeleOp1 extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -77,7 +77,7 @@ public class LinearTeleOp extends LinearOpMode {
     private DcMotor rightBack = null;
     private DcMotor leftBack = null;
     private DcMotor pivot = null;
-    private Servo claw = null;
+    // private Servo claw = null;
 
     @Override
     public void runOpMode() {
@@ -92,7 +92,7 @@ public class LinearTeleOp extends LinearOpMode {
         leftBack  = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightFront");
         pivot = hardwareMap.get(DcMotor.class, "pivot1");
-        claw = hardwareMap.get(Servo.class, "claw1");
+        //   claw = hardwareMap.get(Servo.class, "claw1");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -138,16 +138,18 @@ public class LinearTeleOp extends LinearOpMode {
             leftBack.setPower(leftPower);
             rightFront.setPower(rightPower);
             pivot.setPower(pivotPower);
-            if (gamepad1.y){
-                claw.setPosition(0);
-            } else if (gamepad1.b) {
-                claw.setPosition(0.5);
-            } else if (gamepad1.x) {
-                claw.setPosition(0.5);
-            } else if (gamepad1.b) {
-                claw.setPosition(1);
-            }
+/*if (gamepad1.dpad_up){
+    claw.setPosition(0);
+} else if (gamepad1.dpad_down) {
+    claw.setPosition(0.5);
+} else if (gamepad1.left_bumper) {
+    claw.setPosition(-1);
+} else if (gamepad1.right_bumper) {
+    claw.setPosition(1);
+}/*/
+//double actpos = claw.getPosition();
             // Show the elapsed game time and wheel power.
+            //     telemetry.addData("Servo Position","Position: " + actpos);
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
