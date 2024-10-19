@@ -66,7 +66,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp
+@TeleOp(name = "SampleTeleOp1")
 
 public class SampleTeleOp1 extends LinearOpMode {
 
@@ -77,7 +77,8 @@ public class SampleTeleOp1 extends LinearOpMode {
     private DcMotor rightBack = null;
     private DcMotor leftBack = null;
     private DcMotor pivot = null;
-    // private Servo claw = null;
+    private Servo claw = null;
+    private DcMotor viper1 = null;
 
     @Override
     public void runOpMode() {
@@ -92,7 +93,8 @@ public class SampleTeleOp1 extends LinearOpMode {
         leftBack  = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightFront");
         pivot = hardwareMap.get(DcMotor.class, "pivot1");
-        //   claw = hardwareMap.get(Servo.class, "claw1");
+        claw = hardwareMap.get(Servo.class, "claw1");
+        viper1 = hardwareMap.get(DcMotor.class, "viper1");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -102,6 +104,7 @@ public class SampleTeleOp1 extends LinearOpMode {
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
         pivot.setDirection(DcMotor.Direction.FORWARD);
+
 
 
         // Wait for the game to start (driver presses START)
@@ -115,6 +118,8 @@ public class SampleTeleOp1 extends LinearOpMode {
             double leftPower;
             double rightPower;
             double pivotPower;
+            double viperPower;
+
 
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
@@ -123,9 +128,10 @@ public class SampleTeleOp1 extends LinearOpMode {
             // - This uses basic math to combine motions and is easier to drive straight.
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
-            pivotPower = Range.clip(gamepad1.right_stick_y, -1.0 , 1.0);
+            pivotPower = Range.clip(gamepad2.right_stick_y, -1.0 , 1.0);
             leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
             rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+            viperPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0);
 
             // Tank Mode uses one stick to control each wheel.
             // - This requires no math, but it is hard to drive forward slowly and keep straight.
@@ -138,18 +144,19 @@ public class SampleTeleOp1 extends LinearOpMode {
             leftBack.setPower(leftPower);
             rightFront.setPower(rightPower);
             pivot.setPower(pivotPower);
-/*if (gamepad1.dpad_up){
-    claw.setPosition(0);
-} else if (gamepad1.dpad_down) {
-    claw.setPosition(0.5);
-} else if (gamepad1.left_bumper) {
-    claw.setPosition(-1);
-} else if (gamepad1.right_bumper) {
-    claw.setPosition(1);
-}/*/
-//double actpos = claw.getPosition();
+            viper1.setPower(viperPower);
+            if (gamepad1.y){
+                claw.setPosition(-1);
+            } else if (gamepad1.b) {
+                claw.setPosition(0);
+            } else if (gamepad1.a) {
+                claw.setPosition(0.5);
+            } else if (gamepad1.x) {
+                claw.setPosition(1);
+            }
+            double actpos = claw.getPosition();
             // Show the elapsed game time and wheel power.
-            //     telemetry.addData("Servo Position","Position: " + actpos);
+            telemetry.addData("Servo Position","Position: " + actpos);
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
