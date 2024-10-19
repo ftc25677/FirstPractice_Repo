@@ -76,7 +76,7 @@ public class SampleTeleOp1 extends LinearOpMode {
     private DcMotor rightFront = null;
     private DcMotor rightBack = null;
     private DcMotor leftBack = null;
-    private DcMotor pivot = null;
+    private DcMotor armpivot = null;
     private Servo claw = null;
     private DcMotor viper1 = null;
 
@@ -92,9 +92,10 @@ public class SampleTeleOp1 extends LinearOpMode {
         rightFront = hardwareMap.get(DcMotor.class, "rightBack");
         leftBack  = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightFront");
-        pivot = hardwareMap.get(DcMotor.class, "pivot1");
+        armpivot = hardwareMap.get(DcMotor.class, "pivot1");
         claw = hardwareMap.get(Servo.class, "claw1");
         viper1 = hardwareMap.get(DcMotor.class, "viper1");
+
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -103,7 +104,7 @@ public class SampleTeleOp1 extends LinearOpMode {
         rightFront.setDirection(DcMotor.Direction.FORWARD);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
-        pivot.setDirection(DcMotor.Direction.FORWARD);
+        armpivot.setDirection(DcMotor.Direction.FORWARD);
 
 
 
@@ -126,6 +127,7 @@ public class SampleTeleOp1 extends LinearOpMode {
 
             // POV Mode uses left stick to go forward, and right stick to turn.
             // - This uses basic math to combine motions and is easier to drive straight.
+            //Movement
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
             pivotPower = Range.clip(gamepad2.right_stick_y, -1.0 , 1.0);
@@ -143,9 +145,9 @@ public class SampleTeleOp1 extends LinearOpMode {
             rightBack.setPower(rightPower);
             leftBack.setPower(leftPower);
             rightFront.setPower(rightPower);
-            pivot.setPower(pivotPower);
+            armpivot.setPower(pivotPower);
             viper1.setPower(viperPower);
-            if (gamepad1.y){
+            /*if (gamepad1.y){
                 claw.setPosition(-1);
             } else if (gamepad1.b) {
                 claw.setPosition(0);
@@ -153,8 +155,13 @@ public class SampleTeleOp1 extends LinearOpMode {
                 claw.setPosition(0.5);
             } else if (gamepad1.x) {
                 claw.setPosition(1);
+            }*/
+
+            if (gamepad2.dpad_up) {
+                claw.setPosition(claw.getPosition() + 0.01);
+            } else if (gamepad2.dpad_down) {
+                claw.setPosition(claw.getPosition() - 0.01);
             }
-            double actpos = claw.getPosition();
             // Show the elapsed game time and wheel power.
             telemetry.addData("Servo Position","Position: " + actpos);
             telemetry.addData("Status", "Run Time: " + runtime.toString());
