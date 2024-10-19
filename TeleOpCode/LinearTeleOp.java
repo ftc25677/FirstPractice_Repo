@@ -158,9 +158,9 @@ public class SampleTeleOp1 extends LinearOpMode {
             }*/
 
             if (gamepad2.dpad_up) {
-                claw.setPosition(claw.getPosition() + 0.01);
+                claw.setPosition(claw.getPosition() + 0.001);
             } else if (gamepad2.dpad_down) {
-                claw.setPosition(claw.getPosition() - 0.01);
+                claw.setPosition(claw.getPosition() - 0.001);
             }
             // Show the elapsed game time and wheel power.
             telemetry.addData("Servo Position","Position: " + actpos);
