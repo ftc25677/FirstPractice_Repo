@@ -134,6 +134,7 @@ public class SampleTeleOp1 extends LinearOpMode {
             leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
             rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
             viperPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0);
+            armpivot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             // Tank Mode uses one stick to control each wheel.
             // - This requires no math, but it is hard to drive forward slowly and keep straight.
@@ -158,12 +159,12 @@ public class SampleTeleOp1 extends LinearOpMode {
             }*/
 
             if (gamepad2.dpad_up) {
-                claw.setPosition(claw.getPosition() + 0.001);
+                claw.setPosition(claw.getPosition() + 0.01);
             } else if (gamepad2.dpad_down) {
-                claw.setPosition(claw.getPosition() - 0.001);
+                claw.setPosition(claw.getPosition() - 0.01);
             }
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Servo Position","Position: " + actpos);
+
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
