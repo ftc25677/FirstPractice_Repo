@@ -110,7 +110,7 @@ public class SampleTeleOp1 extends LinearOpMode {
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
         viper2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+        pivotClaw.setPosition(pivotClaw.getPosition() + 0.1);
 
 
         // Wait for the game to start (driver presse s START)
@@ -163,11 +163,10 @@ public class SampleTeleOp1 extends LinearOpMode {
             viper2.setPower(pivotPower);
 
 
-            if (gamepad2.dpad_up) {
-                pivotClaw.setPosition(pivotClaw.getPosition() + 0.1);
-            } else if (gamepad2.dpad_down) {
-                pivotClaw.setPosition(pivotClaw.getPosition() - 0.1);
-            }
+
+            pivotClaw.setPosition(pivotClaw.getPosition() + 0.1);
+
+
 
             if (gamepad2.right_bumper) {
                 Claw.setPosition(Claw.getPosition() + 0.1);
