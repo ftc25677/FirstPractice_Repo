@@ -82,6 +82,7 @@ public class SampleTeleOp1 extends LinearOpMode {
     private Servo pivotClaw = null;
     private DcMotor linear1 = null;
     private DcMotor viper2 = null;
+    double speed50=0.5;
 
     @Override
     public void runOpMode() {
@@ -99,7 +100,6 @@ public class SampleTeleOp1 extends LinearOpMode {
         Claw = hardwareMap.get(Servo.class, "claw1");
         linear1 = hardwareMap.get(DcMotor.class, "viper1");
         viper2 = hardwareMap.get(DcMotor.class, "pivot1");
-        pivotClaw = hardwareMap.get(Servo.class, "pivotclaw");
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
@@ -110,7 +110,6 @@ public class SampleTeleOp1 extends LinearOpMode {
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
         viper2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        pivotClaw.setPosition(pivotClaw.getPosition() + 0.1);
 
 
         // Wait for the game to start (driver presse s START)
@@ -119,7 +118,6 @@ public class SampleTeleOp1 extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
             // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
@@ -127,8 +125,10 @@ public class SampleTeleOp1 extends LinearOpMode {
             double viperPower;
             double holdStop = 0.1;
             double holdStop1 = -0.1;
-            // double OMNIPower0 = 0;
-            // double OMNIPower1 = 1.0;
+            double OMNIPower0 = 0;
+            double OMNIPower1 = 1;
+            double OMNIPower2 = 1;
+
 
 
 
@@ -141,8 +141,14 @@ public class SampleTeleOp1 extends LinearOpMode {
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
             pivotPower = Range.clip(gamepad2.right_stick_y, -1.0 , 1.0);
-            leftPower    = Range.clip(drive + turn, -0.5, 0.5) ;
-            rightPower   = Range.clip(drive - turn, -0.5, 0.5) ;
+            leftPower    = Range.clip(drive + turn, -speed50, speed50) ;
+            rightPower   = Range.clip(drive - turn, -speed50, speed50) ;
+            if (gamepad1.y){
+                speed50=0.5;
+            }else if(gamepad1.b){
+                speed50=0.75;
+            }
+
             viperPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0);
             double OMNI = Range.clip(gamepad1.left_stick_x, -1, 1);
 
@@ -162,16 +168,18 @@ public class SampleTeleOp1 extends LinearOpMode {
             linear1.setPower(-viperPower);
             viper2.setPower(pivotPower);
 
+            if (gamepad2.left_bumper) {
+                Claw.setPosition(1);
+            } else if (gamepad2.right_bumper) {
+                Claw.setPosition(0.5);
+            }
 
 
-            pivotClaw.setPosition(pivotClaw.getPosition() + 0.1);
 
-
-
-            if (gamepad2.right_bumper) {
-                Claw.setPosition(Claw.getPosition() + 0.1);
-            } else if (gamepad2.left_bumper) {
-                Claw.setPosition(Claw.getPosition() - 0.1);
+            if (gamepad2.dpad_up) {
+                Claw.setPosition(1);
+            } else if (gamepad2.dpad_down) {
+                Claw.setPosition(0.5);
             }
 
 
@@ -181,28 +189,26 @@ public class SampleTeleOp1 extends LinearOpMode {
             if (gamepad2.left_trigger > 0){
                 viper2.setPower(holdStop1);
             }
-            leftFront.setPower(OMNI);
-            rightBack.setPower(-OMNI);
-            leftBack.setPower(-OMNI);
-            rightFront.setPower(OMNI);
-           /* if (gamepad1.x){
+
+            if (gamepad1.right_bumper){
                 leftFront.setPower(OMNIPower1);
                 rightFront.setPower(OMNIPower1);
                 leftBack.setPower(-OMNIPower1);
                 rightBack.setPower(-OMNIPower1);
-            }else if (gamepad1.y){
+            }else if(gamepad1.dpad_up){
                 leftFront.setPower(OMNIPower0);
                 rightFront.setPower(OMNIPower0);
                 leftBack.setPower(OMNIPower0);
                 rightBack.setPower(OMNIPower0);
-            } else if (gamepad1.b) {
+                leftFront.setPower(OMNIPower0);
+            } else if (gamepad1.left_bumper) {
                 leftFront.setPower(-OMNIPower1);
                 rightFront.setPower(-OMNIPower1);
                 leftBack.setPower(OMNIPower1);
                 rightBack.setPower(OMNIPower1);
-            }*/
+            }
             // Show the elapsed game time and wheel power.
-
+            ;
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
