@@ -85,8 +85,37 @@ public class SampleTeleOp1 extends LinearOpMode {
     double speed50=0.5;
 
     @Override
+<<<<<<< Updated upstream
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
+=======
+    public void loop() {
+        double leftPower;
+        double rightPower;
+        double pivotPower;
+        double drive = -gamepad1.left_stick_y;
+        double turn  =  -gamepad1.right_stick_x;
+
+        //Setting the Pivot motor to gamepad 2's left stick y
+        double pivotTurn = gamepad2.left_stick_y;
+        pivotPower = Range.clip(pivotTurn, -1.0. 1.0);
+
+        // This sets the joysticks to their corresponding values
+        leftPower = Range.clip(drive + turn, -1.0, 1.0) ;
+        rightPower = Range.clip(drive - turn, -1.0, 1.0) ;
+        //Math for calculating each wheel's power using the amount of drive requested and turn requested
+        leftFront.setPower(leftPower);
+        rightFront.setPower(rightPower);
+        leftRear.setPower(leftPower);
+        rightRear.setPower(rightPower);
+        Pivot.setPower(pivotPower);
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+>>>>>>> Stashed changes
         telemetry.update();
 
         // Initialize the hardware variables. Note that the strings used here as parameters
