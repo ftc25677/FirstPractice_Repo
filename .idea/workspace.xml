@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0eec0e2-f798-45dc-a301-90a8b7a21aff" name="Changes" comment="FINAL CODE FOR MEET TELEOP" />
+    <list default="true" id="c0eec0e2-f798-45dc-a301-90a8b7a21aff" name="Changes" comment="FINAL CODE FOR MEET TELEOP">
+      <change afterPath="$PROJECT_DIR$/AutoCodes/AutoUsingEncoders.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -51,6 +53,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "AutonomousCodes",
     "kotlin-language-version-configured": "true"
   }
 }]]></component>
