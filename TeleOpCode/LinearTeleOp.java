@@ -31,10 +31,12 @@ package org.firstinspires.ftc.teamcode;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
+
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
+
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -69,76 +71,78 @@ import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name = "LinearPov")
 
-public class SampleTeleOp1 extends LinearOpMode {
+public class SampleArmEncoderTeleOp1 extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
+    //RunTime for Telemetry(Not Important, Just for testing data)
+
     private DcMotor leftFront = null;
     private DcMotor rightFront = null;
     private DcMotor rightBack = null;
     private DcMotor leftBack = null;
+    //Movement Motors
 
-    private Servo Claw = null;
-    private Servo pivotClaw = null;
+
+    private CRServo ContinuousIntakeSide2 = null;
+    private CRServo ContinuousIntakeSide1 = null;
+    private Servo SpecimenContinuousIntakeSide2;
+    //Servos (2 for Intake 1 for ContinuousIntakeSide2)
+
+    //Attachment Motors (Linear Slide and Pivot)
     private DcMotor linear1 = null;
-    private DcMotor viper2 = null;
-    double speed50=0.5;
+    private DcMotor pivot1 = null;
+
+    // pivot Pos is the same as currentPos, but is called a tick earlier. This helps for holdStop (PIVOT POSITION)
+    int pivotPos;
+    int currentpivotPos;
+
+    //Power for movemetn, helps change speeds
+    double movementPower=0.5;
+
+    //Target Position for encodors
+    int Targetpos;
 
     @Override
-<<<<<<< Updated upstream
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
-=======
-    public void loop() {
-        double leftPower;
-        double rightPower;
-        double pivotPower;
-        double drive = -gamepad1.left_stick_y;
-        double turn  =  -gamepad1.right_stick_x;
-
-        //Setting the Pivot motor to gamepad 2's left stick y
-        double pivotTurn = gamepad2.left_stick_y;
-        pivotPower = Range.clip(pivotTurn, -1.0. 1.0);
-
-        // This sets the joysticks to their corresponding values
-        leftPower = Range.clip(drive + turn, -1.0, 1.0) ;
-        rightPower = Range.clip(drive - turn, -1.0, 1.0) ;
-        //Math for calculating each wheel's power using the amount of drive requested and turn requested
-        leftFront.setPower(leftPower);
-        rightFront.setPower(rightPower);
-        leftRear.setPower(leftPower);
-        rightRear.setPower(rightPower);
-        Pivot.setPower(pivotPower);
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
->>>>>>> Stashed changes
         telemetry.update();
+        //Telemetry data for status (Dont worry about it)
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+
         leftFront  = hardwareMap.get(DcMotor.class, "leftFront");
         rightFront = hardwareMap.get(DcMotor.class, "rightBack");
         leftBack  = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightFront");
 
-        Claw = hardwareMap.get(Servo.class, "claw1");
+        // Calling all the motors on the driver station
+
+        ContinuousIntakeSide2 = hardwareMap.get(CRServo.class, "ContinuousIntakeSide21");
+        ContinuousIntakeSide1 = hardwareMap.get(CRServo.class, "ContinuousIntakeSide1");
+        SpecimenContinuousIntakeSide2 = hardwareMap.get(Servo.class, "SpecimenContinuousIntakeSide2");
+
+        // Calling all  the ContinuousIntakeSide2s on driver station
+
         linear1 = hardwareMap.get(DcMotor.class, "viper1");
-        viper2 = hardwareMap.get(DcMotor.class, "pivot1");
+        pivot1 = hardwareMap.get(DcMotor.class, "pivot1");
+
+        //Calling attachments
+        pivot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        pivot1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        //Presetting the encoders for the pivot
 
 
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
+
+
+
+
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         rightFront.setDirection(DcMotor.Direction.FORWARD);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.FORWARD);
-        viper2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //Setting movement motors directions to match the robot's build/orientation
+
 
 
         // Wait for the game to start (driver presse s START)
@@ -152,42 +156,46 @@ public class SampleTeleOp1 extends LinearOpMode {
             double rightPower;
             double pivotPower;
             double viperPower;
-            double holdStop = 0.1;
-            double holdStop1 = -0.1;
+            //Power variables for cleaner code
+
             double OMNIPower0 = 0;
             double OMNIPower1 = 1;
-            double OMNIPower2 = 1;
+            double OMNIPower2 = -1;
+
+            //OMNI variables so it can be used on a button
+
+
+            final double INTAKE_COLLECT    = -1.0;
+            final double INTAKE_OFF        =  0.0;
+            final double INTAKE_DEPOSIT    =  0.5;
+            //Intake variables for cleaner code and continual movement
+//
 
 
 
 
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
-
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
             //Movement
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
-            pivotPower = Range.clip(gamepad2.right_stick_y, -1.0 , 1.0);
-            leftPower    = Range.clip(drive + turn, -speed50, speed50) ;
-            rightPower   = Range.clip(drive - turn, -speed50, speed50) ;
+            double OMNI = Range.clip(gamepad1.left_stick_x, -1, 1);
+            pivotPower = Range.clip(gamepad2.right_stick_y, -0.5 , 0.5);
+            leftPower    = Range.clip(drive + turn, -movementPower, movementPower) ;
+            rightPower   = Range.clip(drive - turn, -movementPower, movementPower) ;
+            viperPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0);
+
+            //Speed Changing using Buttons
             if (gamepad1.y){
-                speed50=0.5;
+                movementPower=0.5;
             }else if(gamepad1.b){
-                speed50=0.75;
+                movementPower=0.75;
             }
 
-            viperPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0);
-            double OMNI = Range.clip(gamepad1.left_stick_x, -1, 1);
+
+// Re updating position variables
+            pivotPos = pivot1.getCurrentPosition();
+            currentpivotPos = pivot1.getCurrentPosition();
 
 
-
-
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            // leftPower  = -gamepad1.left_stick_y ;
-            // rightPower = -gamepad1.right_stick_y ;
 
             // Send calculated power to wheels
             leftFront.setPower(leftPower);
@@ -195,49 +203,88 @@ public class SampleTeleOp1 extends LinearOpMode {
             leftBack.setPower(leftPower);
             rightFront.setPower(rightPower);
             linear1.setPower(-viperPower);
-            viper2.setPower(pivotPower);
 
-            if (gamepad2.left_bumper) {
-                Claw.setPosition(1);
-            } else if (gamepad2.right_bumper) {
-                Claw.setPosition(0.5);
+
+
+            //Continuous motion intake
+            if(gamepad2.left_bumper){
+                ContinuousIntakeSide2.setPower(INTAKE_COLLECT);
+                ContinuousIntakeSide1.setPower(-INTAKE_COLLECT);
+            }else if (gamepad2.right_bumper){
+                ContinuousIntakeSide2.setPower(INTAKE_DEPOSIT);
+                ContinuousIntakeSide1.setPower(-INTAKE_DEPOSIT);
+            } else{
+                ContinuousIntakeSide2.setPower(INTAKE_OFF);
+                ContinuousIntakeSide1.setPower(INTAKE_OFF);
             }
 
 
 
-            if (gamepad2.dpad_up) {
-                Claw.setPosition(1);
-            } else if (gamepad2.dpad_down) {
-                Claw.setPosition(0.5);
-            }
 
 
-            if (gamepad2.right_trigger > 0){
-                viper2.setPower(holdStop);
-            }
-            if (gamepad2.left_trigger > 0){
-                viper2.setPower(holdStop1);
-            }
-
-            if (gamepad1.right_bumper){
-                leftFront.setPower(OMNIPower1);
-                rightFront.setPower(OMNIPower1);
-                leftBack.setPower(-OMNIPower1);
-                rightBack.setPower(-OMNIPower1);
-            }else if(gamepad1.dpad_up){
-                leftFront.setPower(OMNIPower0);
-                rightFront.setPower(OMNIPower0);
-                leftBack.setPower(OMNIPower0);
-                rightBack.setPower(OMNIPower0);
-                leftFront.setPower(OMNIPower0);
-            } else if (gamepad1.left_bumper) {
-                leftFront.setPower(-OMNIPower1);
-                rightFront.setPower(-OMNIPower1);
+// Omni movement code for buttons
+            if (gamepad1.left_bumper){
+                leftFront.setPower(OMNIPower2);
+                rightFront.setPower(OMNIPower2);
                 leftBack.setPower(OMNIPower1);
                 rightBack.setPower(OMNIPower1);
+
+            } else if (gamepad1.right_bumper) {
+                leftFront.setPower(OMNIPower1);
+                rightFront.setPower(OMNIPower1);
+                leftBack.setPower(OMNIPower2);
+                rightBack.setPower(OMNIPower2);
             }
+
+            //ContinuousIntakeSide2 positioning matches ContinuousIntakeSide2)
+            if (gamepad2.dpad_up){
+                SpecimenContinuousIntakeSide2.setPosition(0.65);
+            } else if (gamepad2.dpad_right){
+                SpecimenContinuousIntakeSide2.setPosition(0.5);
+            }else if (gamepad2.dpad_down){
+                SpecimenContinuousIntakeSide2.setPosition(0.4);
+            }
+
+
+
+            //PIVOT HOLD STOP FUNCTION (ASK ANI)
+            if(pivotPower > 0){
+                Targetpos += 10;
+                pivot1.setTargetPosition(Targetpos);
+                pivot1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                pivot1.setPower(pivotPower);
+                pivotPos = pivot1.getCurrentPosition();
+                currentpivotPos = pivot1.getCurrentPosition();
+            } else if (pivotPower <0 ) {
+                Targetpos -= 10;
+                pivotPos = pivot1.getCurrentPosition();
+                currentpivotPos = pivot1.getCurrentPosition();
+                pivot1.setTargetPosition(Targetpos);
+                pivot1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                pivot1.setPower(pivotPower);
+            } else if(pivotPower == 0 && pivotPos != currentpivotPos) {
+                pivotPos = pivot1.getCurrentPosition();
+                currentpivotPos = pivot1.getCurrentPosition();
+                Targetpos = pivotPos;
+                pivot1.setTargetPosition(Targetpos);
+                pivot1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                pivot1.setPower(3);
+            }else{
+                pivotPos = pivot1.getCurrentPosition();
+                currentpivotPos = pivot1.getCurrentPosition();
+            }
+
+
+            //Final Lift
+            if (gamepad2.x){
+                pivot1.setPower(1);
+                sleep(500000);
+            }
+
+            //Telemetry
+            pivotPos = pivot1.getCurrentPosition();
             // Show the elapsed game time and wheel power.
-            ;
+            telemetry.addData("Pivot", pivotPos);
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
