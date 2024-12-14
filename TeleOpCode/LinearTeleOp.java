@@ -13,7 +13,7 @@
  *
  * Neither the name of FIRST nor the names of its contributors may be used to endorse or
  * promote products derived from this software without specific prior written permission.
- *
+
  * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
  * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 
@@ -69,9 +70,9 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name = "LinearPov")
+@TeleOp(name = "TeleOp_Meet_2")
 
-public class SampleArmEncoderTeleOp1 extends LinearOpMode {
+public class Meet2TeleOp extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -86,12 +87,15 @@ public class SampleArmEncoderTeleOp1 extends LinearOpMode {
 
     private CRServo ContinuousIntakeSide2 = null;
     private CRServo ContinuousIntakeSide1 = null;
-    private Servo SpecimenContinuousIntakeSide2;
+    private Servo SpecimenClaw;
+    private CRServo PivotServo;
+
     //Servos (2 for Intake 1 for ContinuousIntakeSide2)
 
     //Attachment Motors (Linear Slide and Pivot)
     private DcMotor linear1 = null;
     private DcMotor pivot1 = null;
+    private DcMotor viper1;
 
     // pivot Pos is the same as currentPos, but is called a tick earlier. This helps for holdStop (PIVOT POSITION)
     int pivotPos;
@@ -111,19 +115,22 @@ public class SampleArmEncoderTeleOp1 extends LinearOpMode {
 
 
         leftFront  = hardwareMap.get(DcMotor.class, "leftFront");
-        rightFront = hardwareMap.get(DcMotor.class, "rightBack");
+        rightFront = hardwareMap.get(DcMotor.class, "rightFront");
         leftBack  = hardwareMap.get(DcMotor.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotor.class, "rightFront");
+        rightBack = hardwareMap.get(DcMotor.class, "rightBack");
 
         // Calling all the motors on the driver station
 
-        ContinuousIntakeSide2 = hardwareMap.get(CRServo.class, "ContinuousIntakeSide21");
-        ContinuousIntakeSide1 = hardwareMap.get(CRServo.class, "ContinuousIntakeSide1");
-        SpecimenContinuousIntakeSide2 = hardwareMap.get(Servo.class, "SpecimenContinuousIntakeSide2");
+        ContinuousIntakeSide2 = hardwareMap.get(CRServo.class, "claw1");
+        ContinuousIntakeSide1 = hardwareMap.get(CRServo.class, "claw2");
+
+        SpecimenClaw = hardwareMap.get(Servo.class, "claw3");
+        PivotServo = hardwareMap.get(CRServo.class, "PivotServo");
 
         // Calling all  the ContinuousIntakeSide2s on driver station
 
-        linear1 = hardwareMap.get(DcMotor.class, "viper1");
+        linear1 = hardwareMap.get(DcMotor.class, "linear1");
+        viper1 = hardwareMap.get(DcMotor.class, "viper1");
         pivot1 = hardwareMap.get(DcMotor.class, "pivot1");
 
         //Calling attachments
@@ -137,12 +144,13 @@ public class SampleArmEncoderTeleOp1 extends LinearOpMode {
 
 
 
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
-        rightFront.setDirection(DcMotor.Direction.FORWARD);
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
-        rightBack.setDirection(DcMotor.Direction.FORWARD);
-        //Setting movement motors directions to match the robot's build/orientation
 
+
+        //Setting movement motors directions to match the robot's build/orientation
+        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         // Wait for the game to start (driver presse s START)
@@ -156,6 +164,8 @@ public class SampleArmEncoderTeleOp1 extends LinearOpMode {
             double rightPower;
             double pivotPower;
             double viperPower;
+            double linearPower;
+            double viperPower1;
             //Power variables for cleaner code
 
             double OMNIPower0 = 0;
@@ -178,10 +188,12 @@ public class SampleArmEncoderTeleOp1 extends LinearOpMode {
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
             double OMNI = Range.clip(gamepad1.left_stick_x, -1, 1);
-            pivotPower = Range.clip(gamepad2.right_stick_y, -0.5 , 0.5);
-            leftPower    = Range.clip(drive + turn, -movementPower, movementPower) ;
-            rightPower   = Range.clip(drive - turn, -movementPower, movementPower) ;
-            viperPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0);
+            pivotPower = Range.clip(gamepad2.right_stick_y, -3 , 3);
+            leftPower    = Range.clip(drive - 2*turn, -movementPower, movementPower) ;
+            rightPower   = Range.clip(drive + 2*turn, -movementPower, movementPower) ;
+            linearPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0);
+            viperPower = Range.clip(gamepad2.right_trigger, -5.0, 5.0);
+            viperPower1 = Range.clip(gamepad2.left_trigger, -5.0, 5.0);
 
             //Speed Changing using Buttons
             if (gamepad1.y){
@@ -198,11 +210,17 @@ public class SampleArmEncoderTeleOp1 extends LinearOpMode {
 
 
             // Send calculated power to wheels
-            leftFront.setPower(leftPower);
-            rightBack.setPower(rightPower);
-            leftBack.setPower(leftPower);
-            rightFront.setPower(rightPower);
-            linear1.setPower(-viperPower);
+            rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+            rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+            rightBack.setPower(leftPower);
+            leftBack.setPower(rightPower);
+            rightFront.setPower(leftPower);
+            leftFront.setPower(rightPower);
+            linear1.setPower(-linearPower);
+            viper1.setPower(-viperPower*10);
+            viper1.setPower(viperPower1);
 
 
 
@@ -222,41 +240,52 @@ public class SampleArmEncoderTeleOp1 extends LinearOpMode {
 
 
 
-// Omni movement code for buttons
-            if (gamepad1.left_bumper){
-                leftFront.setPower(OMNIPower2);
-                rightFront.setPower(OMNIPower2);
-                leftBack.setPower(OMNIPower1);
-                rightBack.setPower(OMNIPower1);
 
-            } else if (gamepad1.right_bumper) {
-                leftFront.setPower(OMNIPower1);
-                rightFront.setPower(OMNIPower1);
-                leftBack.setPower(OMNIPower2);
-                rightBack.setPower(OMNIPower2);
+// Omni movement code for buttons
+            while (gamepad1.left_bumper){
+                rightFront.setPower(-0.55);
+                leftFront.setPower(0.55);
+                rightBack.setPower(0.55);
+                leftBack.setPower(-0.55);
             }
 
+            while (gamepad1.right_bumper){
+                rightFront.setPower(0.55);
+                leftFront.setPower(-0.55);
+                rightBack.setPower(-0.55);
+                leftBack.setPower(0.55);
+            }
+
+            if(gamepad2.right_stick_button){
+                PivotServo.setPower(1);
+
+            } else if(gamepad2.left_stick_button){
+                PivotServo.setPower(-1);
+            }else{
+                PivotServo.setPower(0);
+            }
             //ContinuousIntakeSide2 positioning matches ContinuousIntakeSide2)
             if (gamepad2.dpad_up){
-                SpecimenContinuousIntakeSide2.setPosition(0.65);
-            } else if (gamepad2.dpad_right){
-                SpecimenContinuousIntakeSide2.setPosition(0.5);
-            }else if (gamepad2.dpad_down){
-                SpecimenContinuousIntakeSide2.setPosition(0.4);
+                SpecimenClaw.setPosition(0.03);
+
+
+            } else if (gamepad2.dpad_down){
+                SpecimenClaw.setPosition(0);
+
             }
 
 
 
             //PIVOT HOLD STOP FUNCTION (ASK ANI)
             if(pivotPower > 0){
-                Targetpos += 10;
+                Targetpos += 15;
                 pivot1.setTargetPosition(Targetpos);
                 pivot1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 pivot1.setPower(pivotPower);
                 pivotPos = pivot1.getCurrentPosition();
                 currentpivotPos = pivot1.getCurrentPosition();
             } else if (pivotPower <0 ) {
-                Targetpos -= 10;
+                Targetpos -= 15;
                 pivotPos = pivot1.getCurrentPosition();
                 currentpivotPos = pivot1.getCurrentPosition();
                 pivot1.setTargetPosition(Targetpos);
@@ -276,15 +305,16 @@ public class SampleArmEncoderTeleOp1 extends LinearOpMode {
 
 
             //Final Lift
-            if (gamepad2.x){
-                pivot1.setPower(1);
-                sleep(500000);
-            }
+
+
 
             //Telemetry
             pivotPos = pivot1.getCurrentPosition();
             // Show the elapsed game time and wheel power.
             telemetry.addData("Pivot", pivotPos);
+            telemetry.addData("PivotClaw", PivotServo.getPower());
+            telemetry.addData("viper", viper1.getPower());
+            telemetry.addData("Claw", SpecimenClaw.getPosition());
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
