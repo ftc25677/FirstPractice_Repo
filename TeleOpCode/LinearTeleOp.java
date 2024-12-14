@@ -98,8 +98,7 @@ public class Meet2TeleOp extends LinearOpMode {
     private DcMotor viper1;
 
     // pivot Pos is the same as currentPos, but is called a tick earlier. This helps for holdStop (PIVOT POSITION)
-    int pivotPos;
-    int currentpivotPos;
+
 
     //Power for movemetn, helps change speeds
     double movementPower=0.5;
@@ -134,8 +133,8 @@ public class Meet2TeleOp extends LinearOpMode {
         pivot1 = hardwareMap.get(DcMotor.class, "pivot1");
 
         //Calling attachments
-        pivot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        pivot1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        pivot1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
 
         //Presetting the encoders for the pivot
 
@@ -195,17 +194,19 @@ public class Meet2TeleOp extends LinearOpMode {
             viperPower = Range.clip(gamepad2.right_trigger, -5.0, 5.0);
             viperPower1 = Range.clip(gamepad2.left_trigger, -5.0, 5.0);
 
+
             //Speed Changing using Buttons
             if (gamepad1.y){
                 movementPower=0.5;
             }else if(gamepad1.b){
                 movementPower=0.75;
+            }else if(gamepad1.x){
+                movementPower=0.65;
             }
 
 
 // Re updating position variables
-            pivotPos = pivot1.getCurrentPosition();
-            currentpivotPos = pivot1.getCurrentPosition();
+
 
 
 
@@ -221,6 +222,7 @@ public class Meet2TeleOp extends LinearOpMode {
             linear1.setPower(-linearPower);
             viper1.setPower(-viperPower*10);
             viper1.setPower(viperPower1);
+            pivot1.setPower(pivotPower);
 
 
 
@@ -277,31 +279,7 @@ public class Meet2TeleOp extends LinearOpMode {
 
 
             //PIVOT HOLD STOP FUNCTION (ASK ANI)
-            if(pivotPower > 0){
-                Targetpos += 15;
-                pivot1.setTargetPosition(Targetpos);
-                pivot1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                pivot1.setPower(pivotPower);
-                pivotPos = pivot1.getCurrentPosition();
-                currentpivotPos = pivot1.getCurrentPosition();
-            } else if (pivotPower <0 ) {
-                Targetpos -= 15;
-                pivotPos = pivot1.getCurrentPosition();
-                currentpivotPos = pivot1.getCurrentPosition();
-                pivot1.setTargetPosition(Targetpos);
-                pivot1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                pivot1.setPower(pivotPower);
-            } else if(pivotPower == 0 && pivotPos != currentpivotPos) {
-                pivotPos = pivot1.getCurrentPosition();
-                currentpivotPos = pivot1.getCurrentPosition();
-                Targetpos = pivotPos;
-                pivot1.setTargetPosition(Targetpos);
-                pivot1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                pivot1.setPower(3);
-            }else{
-                pivotPos = pivot1.getCurrentPosition();
-                currentpivotPos = pivot1.getCurrentPosition();
-            }
+
 
 
             //Final Lift
@@ -309,9 +287,9 @@ public class Meet2TeleOp extends LinearOpMode {
 
 
             //Telemetry
-            pivotPos = pivot1.getCurrentPosition();
+
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Pivot", pivotPos);
+
             telemetry.addData("PivotClaw", PivotServo.getPower());
             telemetry.addData("viper", viper1.getPower());
             telemetry.addData("Claw", SpecimenClaw.getPosition());
