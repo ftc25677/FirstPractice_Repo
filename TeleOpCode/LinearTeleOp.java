@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 FIRST. All rights reserved.
+/* Copyright (c) 2021 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -13,7 +13,7 @@
  *
  * Neither the name of FIRST nor the names of its contributors may be used to endorse or
  * promote products derived from this software without specific prior written permission.
-
+ *
  * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
  * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -29,273 +29,191 @@
 
 package org.firstinspires.ftc.teamcode;
 
-
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
-
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-
-//hiiiii
 /*
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The n
+
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- * ames of OpModes appear on the menu
- * of the FTC Driver Station. When a selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * 1) Axial:    Driving forward and backward               Left-joystick Forward/Backward
+ * 2) Lateral:  Strafing right and left                     Left-joystick Right and Left
+ * 3) Yaw:      Rotating Clockwise and counter clockwise    Right-joystick Right and Left
+
+
  */
 
-@TeleOp(name = "TeleOp_Meet_2")
 
-public class Meet2TeleOp extends LinearOpMode {
+@TeleOp(name="Basic: Meet3TeleOp", group="Linear OpMode")
 
-    // Declare OpMode members.
+public class Meet3TeleOp extends LinearOpMode {
+
+    // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
-    //RunTime for Telemetry(Not Important, Just for testing data)
-
-    private DcMotor leftFront = null;
-    private DcMotor rightFront = null;
-    private DcMotor rightBack = null;
-    private DcMotor leftBack = null;
-    //Movement Motors
-
-
-    private CRServo ContinuousIntakeSide2 = null;
-    private CRServo ContinuousIntakeSide1 = null;
+    private DcMotor leftFrontDrive = null;
+    private DcMotor leftBackDrive = null;
+    private DcMotor rightFrontDrive = null;
+    private DcMotor rightBackDrive = null;
+    private DcMotor bucketViper;
     private Servo SpecimenClaw;
-    private CRServo PivotServo;
-
-    //Servos (2 for Intake 1 for ContinuousIntakeSide2)
-
-    //Attachment Motors (Linear Slide and Pivot)
-    private DcMotor linear1 = null;
-    private DcMotor pivot1 = null;
-    private DcMotor viper1;
-
-    // pivot Pos is the same as currentPos, but is called a tick earlier. This helps for holdStop (PIVOT POSITION)
-
-
-    //Power for movemetn, helps change speeds
-    double movementPower=0.5;
-
-    //Target Position for encodors
-    int Targetpos;
-
+    private Servo bucketServo;
+    private CRServo extensionArm;
+    private Servo extensionClaw;
+    private Servo PivotClaw;
+    double exnumber=0;
+    boolean stopservo = false;
+    double bucketPower;
+    double bucketPower1;
     @Override
-    public void runOpMode() {
+    public void runOpMode(){
+        // Initialize the hardware variables. Note that the strings used here must correspond
+        // to the names assigned during the robot configuration step on the DS or RC devices.
+        leftFrontDrive  = hardwareMap.get(DcMotor.class, "leftFront");
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "leftBack");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFront");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "rightBack");
+        extensionArm = hardwareMap.get(CRServo.class, "extensionArm");
+        bucketViper = hardwareMap.get(DcMotor.class, "bucketViper");
+        bucketServo =hardwareMap.get(Servo.class, "bucketServo");
+        extensionClaw = hardwareMap.get(Servo.class, "extensionClaw");
+        SpecimenClaw = hardwareMap.get(Servo.class, "claw3");
+        PivotClaw = hardwareMap.get(Servo.class, "PivotClaw");
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+
+        double ActionNumber =1;
+        double movementPower = 0.5;
+        double rightPower;
+        double leftPower;
+
+        // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-        //Telemetry data for status (Dont worry about it)
 
-
-        leftFront  = hardwareMap.get(DcMotor.class, "leftFront");
-        rightFront = hardwareMap.get(DcMotor.class, "rightFront");
-        leftBack  = hardwareMap.get(DcMotor.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotor.class, "rightBack");
-
-        // Calling all the motors on the driver station
-
-        ContinuousIntakeSide2 = hardwareMap.get(CRServo.class, "claw1");
-        ContinuousIntakeSide1 = hardwareMap.get(CRServo.class, "claw2");
-
-        SpecimenClaw = hardwareMap.get(Servo.class, "claw3");
-        PivotServo = hardwareMap.get(CRServo.class, "PivotServo");
-
-        // Calling all  the ContinuousIntakeSide2s on driver station
-
-        linear1 = hardwareMap.get(DcMotor.class, "linear1");
-        viper1 = hardwareMap.get(DcMotor.class, "viper1");
-        pivot1 = hardwareMap.get(DcMotor.class, "pivot1");
-
-        //Calling attachments
-        pivot1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-
-        //Presetting the encoders for the pivot
-
-
-
-
-
-
-
-
-        //Setting movement motors directions to match the robot's build/orientation
-        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
-        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
-        // Wait for the game to start (driver presse s START)
         waitForStart();
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
-            double pivotPower;
-            double viperPower;
-            double linearPower;
-            double viperPower1;
-            //Power variables for cleaner code
-
-            double OMNIPower0 = 0;
-            double OMNIPower1 = 1;
-            double OMNIPower2 = -1;
-
-            //OMNI variables so it can be used on a button
-
-
-            final double INTAKE_COLLECT    = -1.0;
-            final double INTAKE_OFF        =  0.0;
-            final double INTAKE_DEPOSIT    =  0.5;
-            //Intake variables for cleaner code and continual movement
-//
-
-
-
-
-            //Movement
-            double drive = -gamepad1.left_stick_y;
-            double turn  =  gamepad1.right_stick_x;
-            double OMNI = Range.clip(gamepad1.left_stick_x, -1, 1);
-            pivotPower = Range.clip(gamepad2.right_stick_y, -3 , 3);
-            leftPower    = Range.clip(drive - 2*turn, -movementPower, movementPower) ;
-            rightPower   = Range.clip(drive + 2*turn, -movementPower, movementPower) ;
-            linearPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0);
-            viperPower = Range.clip(gamepad2.right_trigger, -5.0, 5.0);
-            viperPower1 = Range.clip(gamepad2.left_trigger, -5.0, 5.0);
-
-
-            //Speed Changing using Buttons
             if (gamepad1.y){
                 movementPower=0.5;
             }else if(gamepad1.b){
                 movementPower=0.75;
-            }else if(gamepad1.x){
-                movementPower=0.65;
-            }
-
-
-// Re updating position variables
-
-
-
-
-            // Send calculated power to wheels
-            rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            leftFront.setDirection(DcMotorSimple.Direction.FORWARD);
-            rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-            leftBack.setDirection(DcMotorSimple.Direction.FORWARD);
-            rightBack.setPower(leftPower);
-            leftBack.setPower(rightPower);
-            rightFront.setPower(leftPower);
-            leftFront.setPower(rightPower);
-            linear1.setPower(-linearPower);
-            viper1.setPower(-viperPower*10);
-            viper1.setPower(viperPower1);
-            pivot1.setPower(pivotPower);
-
-
-
-            //Continuous motion intake
-            if(gamepad2.left_bumper){
-                ContinuousIntakeSide2.setPower(INTAKE_COLLECT);
-                ContinuousIntakeSide1.setPower(-INTAKE_COLLECT);
-            }else if (gamepad2.right_bumper){
-                ContinuousIntakeSide2.setPower(INTAKE_DEPOSIT);
-                ContinuousIntakeSide1.setPower(-INTAKE_DEPOSIT);
-            } else{
-                ContinuousIntakeSide2.setPower(INTAKE_OFF);
-                ContinuousIntakeSide1.setPower(INTAKE_OFF);
             }
 
 
 
+            double drive = -gamepad1.left_stick_y;
+            double turn  =  gamepad1.right_stick_x;
+            double OMNI = Range.clip(gamepad1.left_stick_x, -1, 1);
 
+            leftPower    = Range.clip(drive - 2*turn, -movementPower,movementPower) ;
+            rightPower   = Range.clip(drive + 2*turn, -movementPower,movementPower) ;
 
+            double extenderPower;
 
-// Omni movement code for buttons
-            while (gamepad1.left_bumper){
-                rightFront.setPower(-0.55);
-                leftFront.setPower(0.55);
-                rightBack.setPower(0.55);
-                leftBack.setPower(-0.55);
+            extenderPower = Range.clip(gamepad2.right_stick_y, -1.0, 1.0);
+            bucketPower = Range.clip(gamepad2.right_trigger, -1.0, 1.0);
+            bucketPower1 = Range.clip(gamepad2.left_trigger, -1.0, 1.0);
+            // Normalize the values so no wheel power exceeds 1000%
+            // This ensures that the robot maintains the desired motion.
+
+            //extensionArm.setPower(extenderPower);
+            if (gamepad2.dpad_up) {
+                extensionClaw.setPosition(1);
+
+            } else if (gamepad2.dpad_down) {
+                extensionClaw.setPosition(0.8);
             }
+            if (gamepad2.right_bumper) {
+                SpecimenClaw.setPosition(0.6);
 
-            while (gamepad1.right_bumper){
-                rightFront.setPower(0.55);
-                leftFront.setPower(-0.55);
-                rightBack.setPower(-0.55);
-                leftBack.setPower(0.55);
             }
-
-            if(gamepad2.right_stick_button){
-                PivotServo.setPower(1);
-
-            } else if(gamepad2.left_stick_button){
-                PivotServo.setPower(-1);
-            }else{
-                PivotServo.setPower(0);
-            }
-            //ContinuousIntakeSide2 positioning matches ContinuousIntakeSide2)
-            if (gamepad2.dpad_up){
-                SpecimenClaw.setPosition(0.03);
-
-
-            } else if (gamepad2.dpad_down){
+            else if (gamepad2.left_bumper) {
                 SpecimenClaw.setPosition(0);
+            }
+            // Send calculated power to wheels
+            leftFrontDrive.setPower(rightPower);
+            rightFrontDrive.setPower(leftPower);
+            leftBackDrive.setPower(rightPower);
+            rightBackDrive.setPower(leftPower);
+            bucketViper.setPower(bucketPower);
+            bucketViper.setPower(-bucketPower1);
+            extensionArm.setPower(-extenderPower);
+          /*  //The next Few Lines are Pseudo Code
+         if (button is pressed){
+         extension arm set power -1
+         sleep for 1000 miliseconds
+         turn Pivot Claw Back
+         open extension claw
+         lift viper
+         drop bucket
+       }
+
+*/
+            if(gamepad2.b){
+                bucketServo.setPosition(0.30);
+            }
+            if(gamepad2.a){
+                bucketServo.setPosition(0.33);
+            }
+            if(gamepad2.y){
+                bucketServo.setPosition(0.18);
+                sleep(1000);
+                bucketServo.setPosition(0.33);
+            }
+            //ALL VALUES HAVE TO BE CHANGED = CURRENT CODE IS *yes* CALIBRATED
+            if(gamepad2.x){
+                extensionArm.setPower(-0.2);
+                sleep(400);
+                PivotClaw.setPosition(-1);
+                sleep(1000);
+                extensionArm.setPower(0);
+                extensionClaw.setPosition(0.8);
+                sleep(100);
+                PivotClaw.setPosition(0.3);
+                sleep(100);
+                extensionClaw.setPosition(1);
+                sleep(500);
+                bucketServo.setPosition(0.31);
+                sleep(100);
+                bucketServo.setPosition(0.33);
+                sleep(150);
+                extensionArm.setPower(0.2);
+                sleep(1000);
 
             }
+            if(gamepad2.dpad_right){
+                PivotClaw.setPosition(-1);
 
+            }else if(gamepad2.dpad_left){
+                PivotClaw.setPosition(0.8);
+            }
+            while (gamepad1.right_bumper){
+                rightFrontDrive.setPower(0.6);
+                leftFrontDrive.setPower(0.6);
+                rightBackDrive.setPower(-0.6);
+                leftBackDrive.setPower(-0.6);
+            }
 
-
-            //PIVOT HOLD STOP FUNCTION (ASK ANI)
-
-
-
-            //Final Lift
-
-
-
-            //Telemetry
-
-            // Show the elapsed game time and wheel power.
-
-            telemetry.addData("PivotClaw", PivotServo.getPower());
-            telemetry.addData("viper", viper1.getPower());
-            telemetry.addData("Claw", SpecimenClaw.getPosition());
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            while (gamepad1.left_bumper){
+                rightFrontDrive.setPower(-0.6);
+                leftFrontDrive.setPower(-0.6);
+                rightBackDrive.setPower(0.6);
+                leftBackDrive.setPower(0.6);
+            }
+            telemetry.addData("servo", bucketServo.getPosition());
             telemetry.update();
         }
+
+
     }
+
 }
