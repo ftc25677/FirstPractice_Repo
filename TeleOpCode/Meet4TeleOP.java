@@ -167,12 +167,36 @@ public class Meet4TeleOP extends LinearOpMode {
 */
 
             if(gamepad2.b){
+                drive = -gamepad1.left_stick_y;
+                turn  =  gamepad1.right_stick_x;
+                leftPower    = Range.clip(drive - 2*turn, -movementPower,movementPower) ;
+                rightPower   = Range.clip(drive + 2*turn, -movementPower,movementPower) ;
+                leftFrontDrive.setPower(rightPower);
+                rightFrontDrive.setPower(leftPower);
+                leftBackDrive.setPower(rightPower);
+                rightBackDrive.setPower(leftPower);
                 bucketServo.setPosition(0.30);
             }
             if(gamepad2.a){
+                drive = -gamepad1.left_stick_y;
+                turn  =  gamepad1.right_stick_x;
+                leftPower    = Range.clip(drive - 2*turn, -movementPower,movementPower) ;
+                rightPower   = Range.clip(drive + 2*turn, -movementPower,movementPower) ;
+                leftFrontDrive.setPower(rightPower);
+                rightFrontDrive.setPower(leftPower);
+                leftBackDrive.setPower(rightPower);
+                rightBackDrive.setPower(leftPower);
                 bucketServo.setPosition(0.33);
             }
             if(gamepad2.y){
+                drive = -gamepad1.left_stick_y;
+                turn  =  gamepad1.right_stick_x;
+                leftPower    = Range.clip(drive - 2*turn, -movementPower,movementPower) ;
+                rightPower   = Range.clip(drive + 2*turn, -movementPower,movementPower) ;
+                leftFrontDrive.setPower(rightPower);
+                rightFrontDrive.setPower(leftPower);
+                leftBackDrive.setPower(rightPower);
+                rightBackDrive.setPower(leftPower);
                 bucketServo.setPosition(0.18);
                 sleep(1000);
                 bucketServo.setPosition(0.33);
